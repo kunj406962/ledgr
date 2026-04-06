@@ -15,6 +15,9 @@ jobs:
   test:
     # Run on the latest Ubuntu — matches our Docker and Render environment.
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 
     steps:
       # Step 1: Check out the code from the PR branch.
