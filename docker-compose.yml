@@ -1,0 +1,120 @@
+# docker-compose.yml
+# This file defines the full local development environment.
+# One command — `docker compose up` — starts all three services together.
+# This mirrors production topology: Next.js frontend, FastAPI backend, PostgreSQL database.
+
+version: "3.9"
+
+services:
+
+  # ─────────────────────────────────────────
+  # FRONTEND — Next.js 14
+  # ─────────────────────────────────────────
+  frontend:
+    # Use the official Node 20 Alpine image.
+    # Alpine is a minimal Linux distro — keeps the image small.
+    # We're not building a custom Dockerfile for frontend because
+    # Vercel handles the production build. Locally we just run `npm run dev`.
+    image: node:20-alpine
+
+    working_dir: /app
+
+    # Mount the local ./frontend folder into the container at /app.
+    # This means changes you make in VS Code are instantly reflected
+    # inside the container — no rebuild needed during development.
+    # The second volume line (/app/node_modules) is a Docker trick:
+    # it prevents the container's node_modules from being overwritten
+    # by the host mount, which would cause issues on Windows/WSL2.
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+    ports:
+      # Map container port 3000 to your host port 3000.
+      # Access the app at http://localhost:3000
+      - "3000:3000"
+
+    environment:
+      # These NEXT_PUBLIC_ variables are embedded into the browser bundle at build time.
+      # They must be prefixed NEXT_PUBLIC_ to be accessible in client components.
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+
+    # Install deps then start the Next.js dev server with hot reload.
+    command: sh -c "npm install && npm run dev"
+
+    # Wait for the API to be up before starting the frontend.
+    # This prevents "API unreachable" errors on first cold start.
+    depends_on:
+      - api
+
+  # ─────────────────────────────────────────
+  # BACKEND — FastAPI
+  # ─────────────────────────────────────────
+  api:
+    # Build the image using our Dockerfile.backend at the repo root.
+    # `context: .` means the build has access to the entire repo (needed
+    # because Dockerfile.backend copies from ./backend/).
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    ports:
+      # Map container port 8000 to host port 8000.
+      # FastAPI's interactive docs will be at http://localhost:8000/docs
+      - "8000:8000"
+
+    environment:
+      # These are read from your local .env file (never committed to git).
+      # The ${VAR} syntax tells Docker Compose to substitute from the environment
+      # or from a .env file in the same directory as docker-compose.yml.
+      - DATABASE_URL=${DATABASE_URL}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+
+    volumes:
+      # Mount backend source so code changes reload without rebuilding the image.
+      # This works because we add --reload to the uvicorn command below.
+      - ./backend:/app
+
+    # Override the CMD from Dockerfile.backend for local dev.
+    # --reload: watches for file changes and restarts the server automatically.
+    # In production (Render), the Dockerfile CMD runs without --reload.
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+    depends_on:
+      - db
+
+  # ─────────────────────────────────────────
+  # DATABASE — PostgreSQL (local dev only)
+  # ─────────────────────────────────────────
+  db:
+    # Official Postgres 16 Alpine image — lightweight and production-grade.
+    image: postgres:16-alpine
+
+    environment:
+      # These credentials are for local development only.
+      # Production uses Supabase's hosted Postgres via DATABASE_URL.
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: finplan_dev
+
+    ports:
+      # Expose Postgres on the standard port so you can connect with
+      # a GUI tool like TablePlus or pgAdmin directly from your host.
+      - "5432:5432"
+
+    volumes:
+      # Named volume: persists your local database data between container restarts.
+      # Without this, every `docker compose down` would wipe your dev data.
+      - postgres_data:/var/lib/postgresql/data
+
+# Declare the named volume at the top level.
+# Docker manages this — it survives container restarts and `docker compose down`.
+# Use `docker compose down -v` if you ever want to wipe it completely.
+volumes:
+  postgres_data:
