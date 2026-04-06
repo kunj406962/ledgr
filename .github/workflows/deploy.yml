@@ -61,10 +61,7 @@ jobs:
       # If a bad deploy happens, you can tell Render to pull a specific SHA tag.
       - name: Build and push API image
         run: |
-          docker build \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/finplan-api:latest \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/finplan-api:${{ github.sha }} \
-            -f Dockerfile .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/finplan-api:latest -t ${{ secrets.DOCKERHUB_USERNAME }}/finplan-api:${{ github.sha }} -f Dockerfile .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/finplan-api:latest
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/finplan-api:${{ github.sha }}
 
