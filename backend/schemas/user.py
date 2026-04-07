@@ -1,8 +1,10 @@
+from uuid import UUID
+
 from pydantic import BaseModel, Field
 
 class UserProfile(BaseModel):
     """Returned by GET /auth/me"""
-    id: str
+    id: UUID
     email: str
     display_name: str | None
     avatar_url: str | None
