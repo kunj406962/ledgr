@@ -3,17 +3,22 @@ main.py
 ───────
 FastAPI application entry point.
  
+Routers are registered here as each phase is completed.
+Currently active:
+    - /auth      → user authentication and profile
+    - /accounts  → account management
+ 
 To run locally:
     uvicorn main:app --reload --port 8000
  
-Interactive API docs available at:
+API docs (development only):
     http://localhost:8000/docs
 """
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
-from routers import auth
+from routers import auth, accounts
 
 app = FastAPI(
     title="Ledgr API",
@@ -36,6 +41,7 @@ app.add_middleware(
 
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(auth.router)
+app.include_router(accounts.router)
 
 @app.get("/health")
 def health_check():
