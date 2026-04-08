@@ -59,6 +59,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    
+    env_file:
+      # Load environment variables from the local .env file.
+      # This keeps secrets out of version control and allows easy local config.
+      - .env
 
     ports:
       # Map container port 8000 to host port 8000.
