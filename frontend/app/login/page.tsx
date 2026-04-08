@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { Button } from "@/components/ui/Button";
 import { Info } from "@/components/login/Info";
 import { SignInForm } from "@/components/login/SignInForm";
 
@@ -43,7 +42,7 @@ export default function LoginPage() {
       <Info />
       
       {/* Right side - Login form */}
-      <SignInForm handleGoogle={handleGoogle} handleGithub={handleGithub} />
+      <SignInForm handleGoogle={handleGoogle} handleGithub={handleGithub} signingIn={signingIn} />
     </div>
   );
 }
