@@ -31,7 +31,7 @@ COPY backend/ .
 
 # Tell Docker that the container listens on port 8000.
 # This is documentation — it doesn't actually publish the port (docker-compose does that).
-EXPOSE EXPOSE ${PORT:-10000}
+EXPOSE ${PORT:-10000}
 
 # The command that runs when the container starts.
 # uvicorn: the ASGI server that runs FastAPI
