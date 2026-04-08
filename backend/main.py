@@ -19,6 +19,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
 from routers import auth, accounts
+import os
 
 app = FastAPI(
     title="Ledgr API", description="Personal finance app backend setup", version="1.0.0"
@@ -55,3 +56,8 @@ def health_check():
 @app.on_event("startup")
 async def startup():
     print("API is ready")
+    
+@app.on_event("startup")
+async def startup():
+    port = os.environ.get("PORT", "unknown")
+    print(f"API is ready on port {port}")
