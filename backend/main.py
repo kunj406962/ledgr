@@ -41,7 +41,10 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(accounts.router)
 
-
+@app.get("/")
+def root():
+    return {"message": "Welcome to the Ledgr API!"}
+  
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
