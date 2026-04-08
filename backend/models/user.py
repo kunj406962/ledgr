@@ -25,9 +25,11 @@ class User(Base):
     id = Column(UUID(as_uuid=True), primary_key=True)
 
     # ── Core fields ───────────────────────────────────────────────────────────
-    email        = Column(String(255), unique=True, nullable=False)
-    display_name = Column(String(100), comment="Pulled from OAuth provider on first sign-in")
-    avatar_url   = Column(Text, comment="Profile picture URL from Google or GitHub")
+    email = Column(String(255), unique=True, nullable=False)
+    display_name = Column(
+        String(100), comment="Pulled from OAuth provider on first sign-in"
+    )
+    avatar_url = Column(Text, comment="Profile picture URL from Google or GitHub")
     home_currency = Column(
         String(3),
         nullable=False,
@@ -36,8 +38,15 @@ class User(Base):
     )
 
     # ── Timestamps ────────────────────────────────────────────────────────────
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
 
     # ── Relationships ─────────────────────────────────────────────────────────
     accounts = relationship(

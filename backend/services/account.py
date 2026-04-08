@@ -2,41 +2,45 @@
 services/account.py
 ───────────────────
 Business logic for accounts.
- 
+
 Key design decision — balance calculation:
     current_balance = opening_balance + SUM(transactions.amount)
- 
+
 Balance is NEVER stored as a column. It is always derived here at query time.
 This prevents drift: if a transaction is edited or deleted, the balance
 automatically corrects itself on the next fetch.
- 
+
 Positive amounts = money coming in (credits).
 Negative amounts = money going out (debits).
 """
 
 import uuid
 from decimal import Decimal
- 
+
 from fastapi import HTTPException, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
- 
+
 from models.account import Account
 from models.transaction import Transaction  # imported for the balance SUM query
 from schemas.account import AccountCreate, AccountUpdate, AccountResponse
 
+
 def _compute_balance(db: Session, account: Account) -> Decimal:
     """
     Computes the current balance for a single account.
- 
+
     Uses a single SUM() query rather than loading all transactions into memory.
     Returns opening_balance when no transactions exist yet.
     """
-    total = db.query(func.sum(Transaction.amount)).filter(
-        Transaction.account_id == account.id
-    ).scalar()
- 
+    total = (
+        db.query(func.sum(Transaction.amount))
+        .filter(Transaction.account_id == account.id)
+        .scalar()
+    )
+
     return account.opening_balance + (total or Decimal("0.00"))
+
 
 def _to_response(db: Session, account: Account) -> AccountResponse:
     """
@@ -54,7 +58,8 @@ def _to_response(db: Session, account: Account) -> AccountResponse:
         is_active=account.is_active,
         created_at=account.created_at,
     )
-    
+
+
 def get_accounts(db: Session, user_id: uuid.UUID) -> list[AccountResponse]:
     """
     Returns all active accounts for the given user,
@@ -68,22 +73,34 @@ def get_accounts(db: Session, user_id: uuid.UUID) -> list[AccountResponse]:
     )
     return [_to_response(db, a) for a in accounts]
 
-def get_account(db: Session, user_id: uuid.UUID, account_id: uuid.UUID) -> AccountResponse:
+
+def get_account(
+    db: Session, user_id: uuid.UUID, account_id: uuid.UUID
+) -> AccountResponse:
     """
     Returns a single account by ID.
     Raises 404 if the account doesn't exist or doesn't belong to this user.
     """
     account = (
         db.query(Account)
-        .filter(Account.id == account_id, Account.user_id == user_id, Account.is_active == True)
+        .filter(
+            Account.id == account_id,
+            Account.user_id == user_id,
+            Account.is_active == True,
+        )
         .first()
     )
     if not account:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
- 
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Account not found"
+        )
+
     return _to_response(db, account)
 
-def create_account(db: Session, user_id: uuid.UUID, body: AccountCreate) -> AccountResponse:
+
+def create_account(
+    db: Session, user_id: uuid.UUID, body: AccountCreate
+) -> AccountResponse:
     """
     Creates a new account for the user.
     opening_balance should represent the real account balance on the
@@ -101,6 +118,7 @@ def create_account(db: Session, user_id: uuid.UUID, body: AccountCreate) -> Acco
     db.refresh(account)
     return _to_response(db, account)
 
+
 def update_account(
     db: Session,
     user_id: uuid.UUID,
@@ -114,20 +132,27 @@ def update_account(
     """
     account = (
         db.query(Account)
-        .filter(Account.id == account_id, Account.user_id == user_id, Account.is_active == True)
+        .filter(
+            Account.id == account_id,
+            Account.user_id == user_id,
+            Account.is_active == True,
+        )
         .first()
     )
     if not account:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
- 
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Account not found"
+        )
+
     if body.name is not None:
         account.name = body.name
     if body.currency is not None:
         account.currency = body.currency.upper()
- 
+
     db.commit()
     db.refresh(account)
     return _to_response(db, account)
+
 
 def deactivate_account(db: Session, user_id: uuid.UUID, account_id: uuid.UUID) -> dict:
     """
@@ -138,13 +163,18 @@ def deactivate_account(db: Session, user_id: uuid.UUID, account_id: uuid.UUID) -
     """
     account = (
         db.query(Account)
-        .filter(Account.id == account_id, Account.user_id == user_id, Account.is_active == True)
+        .filter(
+            Account.id == account_id,
+            Account.user_id == user_id,
+            Account.is_active == True,
+        )
         .first()
     )
     if not account:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
- 
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Account not found"
+        )
+
     account.is_active = False
     db.commit()
     return {"detail": "Account deactivated successfully"}
- 

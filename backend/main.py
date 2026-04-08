@@ -2,15 +2,15 @@
 main.py
 ───────
 FastAPI application entry point.
- 
+
 Routers are registered here as each phase is completed.
 Currently active:
     - /auth      → user authentication and profile
     - /accounts  → account management
- 
+
 To run locally:
     uvicorn main:app --reload --port 8000
- 
+
 API docs (development only):
     http://localhost:8000/docs
 """
@@ -21,11 +21,9 @@ from config import settings
 from routers import auth, accounts
 
 app = FastAPI(
-    title="Ledgr API",
-    description="Personal finance app backend setup",
-    version="1.0.0"
+    title="Ledgr API", description="Personal finance app backend setup", version="1.0.0"
 )
- 
+
 # ── CORS ──────────────────────────────────────────────────────────────────────
 # In development, allow the Next.js dev server.
 # In production, lock it down to your actual frontend domain.
@@ -42,6 +40,7 @@ app.add_middleware(
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(auth.router)
 app.include_router(accounts.router)
+
 
 @app.get("/health")
 def health_check():

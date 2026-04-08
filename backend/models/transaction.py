@@ -20,7 +20,18 @@ Transaction.amount in its balance SUM query without a circular import.
 import uuid
 import enum
 
-from sqlalchemy import Boolean, Column, Date, DateTime, Enum, ForeignKey, Numeric, String, Text, func
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Numeric,
+    String,
+    Text,
+    func,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -29,6 +40,7 @@ from db import Base
 
 class TransactionDirection(str, enum.Enum):
     """Explicit direction alongside the signed amount — avoids ambiguity."""
+
     incoming = "in"
     outgoing = "out"
 
@@ -66,14 +78,16 @@ class Transaction(Base):
         comment="e.g. Groceries, Rent, Salary — set by user or Gemini",
     )
 
-    merchant         = Column(String(255), comment="Cleaned merchant name from Gemini")
-    description_raw  = Column(Text, comment="Original bank statement description")
+    merchant = Column(String(255), comment="Cleaned merchant name from Gemini")
+    description_raw = Column(Text, comment="Original bank statement description")
     transaction_date = Column(Date, nullable=False)
-    is_recurring     = Column(Boolean, nullable=False, default=False)
+    is_recurring = Column(Boolean, nullable=False, default=False)
 
     # ── Import / transfer links ───────────────────────────────────────────────
-    transfer_id     = Column(UUID(as_uuid=True), ForeignKey("transfers.id"), nullable=True)
-    import_batch_id = Column(UUID(as_uuid=True), ForeignKey("import_batches.id"), nullable=True)
+    transfer_id = Column(UUID(as_uuid=True), ForeignKey("transfers.id"), nullable=True)
+    import_batch_id = Column(
+        UUID(as_uuid=True), ForeignKey("import_batches.id"), nullable=True
+    )
 
     # ── Duplicate prevention ──────────────────────────────────────────────────
     dedup_hash = Column(
@@ -82,8 +96,10 @@ class Transaction(Base):
         comment="SHA256(account_id+date+amount+description) — prevents duplicate imports",
     )
 
-    notes      = Column(Text)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    notes = Column(Text)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
     # ── Relationships ─────────────────────────────────────────────────────────
     account = relationship("Account", back_populates="transactions")
