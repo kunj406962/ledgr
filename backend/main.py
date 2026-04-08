@@ -56,7 +56,8 @@ def health_check():
 @app.on_event("startup")
 async def startup():
     print("API is ready")
-    
+
+
 @app.on_event("startup")
 async def startup():
     port = os.environ.get("PORT", "unknown")
