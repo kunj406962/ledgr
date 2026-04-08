@@ -39,4 +39,4 @@ EXPOSE 8000
 # --host 0.0.0.0: listens on all network interfaces (required inside a container)
 # --port 8000: the port to listen on
 # Note: no --reload here. --reload is for development only (added in docker-compose).
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
