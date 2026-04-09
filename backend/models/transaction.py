@@ -103,3 +103,14 @@ class Transaction(Base):
 
     # ── Relationships ─────────────────────────────────────────────────────────
     account = relationship("Account", back_populates="transactions")
+
+    transfer = relationship(
+        "Transfer",
+        foreign_keys=[transfer_id],
+        back_populates="transactions",
+    )
+
+    import_batch = relationship(
+        "ImportBatch",
+        back_populates="transactions",
+    )

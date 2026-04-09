@@ -118,3 +118,8 @@ class Account(Base):
         back_populates="account",
         cascade="all, delete-orphan",
     )
+    import_batches = relationship(
+        "ImportBatch",
+        back_populates="account",
+        cascade="all, delete-orphan",
+    )
