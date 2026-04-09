@@ -7,8 +7,8 @@ Uses an in-memory SQLite database so tests never touch the real
 Supabase PostgreSQL instance. SQLAlchemy handles the dialect differences.
 
 Fixtures:
-    db       → a fresh SQLite session per test (rolls back after each test)
-    client   → a FastAPI TestClient with auth dependency overridden
+    db        → a fresh SQLite session per test (rolls back after each test)
+    client    → a FastAPI TestClient with auth dependency overridden
     mock_user → a fake User object representing the authenticated user
 """
 
@@ -24,11 +24,11 @@ from main import app
 from models.user import User
 from models.account import Account
 from models.transaction import Transaction
+from models.transfer import Transfer          # ← must be imported so SQLAlchemy
+from models.import_batch import ImportBatch  # ← registers these tables before create_all
 from services.auth import get_current_user
 
 # ── In-memory SQLite DB ───────────────────────────────────────────────────────
-# SQLite is used for tests — no external DB needed.
-# check_same_thread=False is required for FastAPI's threaded test client.
 
 SQLITE_URL = "sqlite:///./test.db"
 
@@ -81,11 +81,10 @@ def mock_user(db) -> User:
 def client(db, mock_user) -> TestClient:
     """
     FastAPI TestClient with two dependencies overridden:
-        - get_db        → uses the test SQLite session
+        - get_db           → uses the test SQLite session
         - get_current_user → returns mock_user without any JWT verification
-    This means no real tokens are needed in tests.
+    No real tokens are needed in tests.
     """
-
     def override_get_db():
         try:
             yield db

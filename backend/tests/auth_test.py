@@ -32,14 +32,14 @@ def test_get_me(client, mock_user):
 
 
 def test_get_me_unauthenticated():
-    """GET /auth/me without a token should return 403."""
+    """GET /auth/me without a token should return 401."""
     from fastapi.testclient import TestClient
     from main import app
 
     # Fresh client with no dependency overrides — no auth bypass
     with TestClient(app) as c:
         resp = c.get("/auth/me")
-    assert resp.status_code == 403
+    assert resp.status_code == 401
 
 
 def test_update_display_name(client, mock_user, db):

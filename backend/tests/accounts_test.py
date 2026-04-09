@@ -16,6 +16,7 @@ Balance calculation:
 
 import uuid
 from decimal import Decimal
+from datetime import date
 
 from models.account import Account
 from models.transaction import Transaction
@@ -198,7 +199,7 @@ def test_balance_with_transactions(client, mock_account, db):
             amount=Decimal("500.00"),
             direction="in",
             category="Income",
-            transaction_date="2025-01-15",
+            transaction_date=date(2025, 1, 15),
         )
     )
     db.add(
@@ -207,7 +208,7 @@ def test_balance_with_transactions(client, mock_account, db):
             amount=Decimal("-200.00"),
             direction="out",
             category="Groceries",
-            transaction_date="2025-01-20",
+            transaction_date=date(2025, 1, 20),
         )
     )
     db.commit()
@@ -228,7 +229,7 @@ def test_balance_reflects_after_debit(client, mock_account, db):
             amount=Decimal("-1450.00"),
             direction="out",
             category="Housing",
-            transaction_date="2025-01-01",
+            transaction_date=date(2025, 1, 1),
         )
     )
     db.commit()

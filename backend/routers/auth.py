@@ -25,7 +25,7 @@ def update_me(
     if body.display_name is not None:
         current_user.display_name = body.display_name
     if body.home_currency is not None:
-        current_user.home_currency = body.home_currency
+        current_user.home_currency = body.home_currency.upper()
     db.commit()
 
     db.refresh(current_user)

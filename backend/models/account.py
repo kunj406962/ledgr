@@ -41,7 +41,7 @@ class AccountType(str, enum.Enum):
 
     chequing = "chequing"
     savings = "savings"
-    investment = "investmen"
+    investment = "investment"
 
 
 class Account(Base):

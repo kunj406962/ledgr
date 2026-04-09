@@ -52,13 +52,3 @@ def root():
 def health_check():
     return {"status": "ok"}
 
-
-@app.on_event("startup")
-async def startup():
-    print("API is ready")
-
-
-@app.on_event("startup")
-async def startup():
-    port = os.environ.get("PORT", "unknown")
-    print(f"API is ready on port {port}")
