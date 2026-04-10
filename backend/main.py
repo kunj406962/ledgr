@@ -18,7 +18,7 @@ API docs (development only):
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings
-from routers import auth, accounts
+from routers import auth, accounts, transactions, transfers
 import os
 
 app = FastAPI(
@@ -41,6 +41,9 @@ app.add_middleware(
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(auth.router)
 app.include_router(accounts.router)
+app.include_router(transactions.account_transactions_router)
+app.include_router(transactions.transactions_router)
+app.include_router(transfers.router)
 
 
 @app.get("/")
@@ -51,4 +54,3 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
-

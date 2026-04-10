@@ -82,6 +82,7 @@ class Transaction(Base):
     description_raw = Column(Text, comment="Original bank statement description")
     transaction_date = Column(Date, nullable=False)
     is_recurring = Column(Boolean, nullable=False, default=False)
+    is_active = Column(Boolean, default=True, nullable=False)
 
     # ── Import / transfer links ───────────────────────────────────────────────
     transfer_id = Column(UUID(as_uuid=True), ForeignKey("transfers.id"), nullable=True)
@@ -92,6 +93,7 @@ class Transaction(Base):
     # ── Duplicate prevention ──────────────────────────────────────────────────
     dedup_hash = Column(
         String(64),
+        unique=True,
         nullable=True,
         comment="SHA256(account_id+date+amount+description) — prevents duplicate imports",
     )

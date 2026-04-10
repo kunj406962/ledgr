@@ -18,23 +18,27 @@ from decimal import Decimal
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from db import Base, get_db
 from main import app
 from models.user import User
 from models.account import Account
 from models.transaction import Transaction
-from models.transfer import Transfer          # ← must be imported so SQLAlchemy
-from models.import_batch import ImportBatch  # ← registers these tables before create_all
-from services.auth import get_current_user
+from models.transfer import Transfer  # ← must be imported so SQLAlchemy
+from models.import_batch import (
+    ImportBatch,
+)  # ← registers these tables before create_all
+from services.auth import get_current_user, get_current_user_id  # ← for dependency override
 
 # ── In-memory SQLite DB ───────────────────────────────────────────────────────
 
 SQLITE_URL = "sqlite:///./test.db"
 
 engine = create_engine(
-    SQLITE_URL,
+    "sqlite:///:memory:",
     connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
 )
 
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -85,6 +89,7 @@ def client(db, mock_user) -> TestClient:
         - get_current_user → returns mock_user without any JWT verification
     No real tokens are needed in tests.
     """
+
     def override_get_db():
         try:
             yield db
@@ -94,8 +99,12 @@ def client(db, mock_user) -> TestClient:
     def override_get_current_user():
         return mock_user
 
+    def override_get_current_user_id():
+        return mock_user.id
+    
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_current_user] = override_get_current_user
+    app.dependency_overrides[get_current_user_id] = override_get_current_user_id
 
     with TestClient(app) as c:
         yield c
