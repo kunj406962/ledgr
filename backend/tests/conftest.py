@@ -29,7 +29,10 @@ from models.transfer import Transfer  # ← must be imported so SQLAlchemy
 from models.import_batch import (
     ImportBatch,
 )  # ← registers these tables before create_all
-from services.auth import get_current_user, get_current_user_id  # ← for dependency override
+from services.auth import (
+    get_current_user,
+    get_current_user_id,
+)  # ← for dependency override
 
 # ── In-memory SQLite DB ───────────────────────────────────────────────────────
 
@@ -101,7 +104,7 @@ def client(db, mock_user) -> TestClient:
 
     def override_get_current_user_id():
         return mock_user.id
-    
+
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_current_user] = override_get_current_user
     app.dependency_overrides[get_current_user_id] = override_get_current_user_id

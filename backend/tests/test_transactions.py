@@ -30,10 +30,10 @@ import pytest
 
 from models.transaction import Transaction
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_dedup_hash(account_id, transaction_date, amount, description_raw=None):
     """Replicate the service-layer hash logic for assertion purposes."""
@@ -43,7 +43,16 @@ def _make_dedup_hash(account_id, transaction_date, amount, description_raw=None)
 
 _tx_counter = itertools.count(1)
 
-def _tx(db, account_id, amount="-25.00", category="Groceries", transaction_date=None, transfer_id=None, is_active=True):
+
+def _tx(
+    db,
+    account_id,
+    amount="-25.00",
+    category="Groceries",
+    transaction_date=None,
+    transfer_id=None,
+    is_active=True,
+):
     """
     Insert a Transaction row directly into the test DB.
 
@@ -51,7 +60,9 @@ def _tx(db, account_id, amount="-25.00", category="Groceries", transaction_date=
     their own state without depending on the POST endpoint working correctly.
     """
     amount_dec = Decimal(amount)
-    d = transaction_date or (date(2025, 1, 1) + timedelta(days=next(_tx_counter))) # ensure unique dates if not specified    
+    d = transaction_date or (
+        date(2025, 1, 1) + timedelta(days=next(_tx_counter))
+    )  # ensure unique dates if not specified
     tx = Transaction(
         account_id=account_id,
         amount=amount_dec,
@@ -73,6 +84,7 @@ def _tx(db, account_id, amount="-25.00", category="Groceries", transaction_date=
 # ---------------------------------------------------------------------------
 # POST /accounts/{account_id}/transactions
 # ---------------------------------------------------------------------------
+
 
 class TestCreateTransaction:
     def test_create_success_debit(self, client, mock_account):
@@ -150,15 +162,21 @@ class TestCreateTransaction:
         """
         tx_date = date(2025, 2, 1)
         # Seed a row with the same values the POST will hash: (account, date, amount, no description)
-        seeded=_tx(db, mock_account.id, amount="-30.00", category="Groceries", transaction_date=tx_date)
+        seeded = _tx(
+            db,
+            mock_account.id,
+            amount="-30.00",
+            category="Groceries",
+            transaction_date=tx_date,
+        )
 
         # DEBUG - print what hash was stored
         print(f"\nSeeded dedup_hash: {seeded.dedup_hash}")
-        
+
         # DEBUG - compute what the POST will hash
         expected = _make_dedup_hash(mock_account.id, tx_date, Decimal("-30.00"), None)
         print(f"Expected POST hash: {expected}")
-        
+
         resp = client.post(
             f"/accounts/{mock_account.id}/transactions",
             json={
@@ -185,11 +203,18 @@ class TestCreateTransaction:
 # GET /accounts/{account_id}/transactions
 # ---------------------------------------------------------------------------
 
+
 class TestListTransactionsForAccount:
     def test_list_returns_active_only(self, client, db, mock_account):
         """Soft-deleted transactions must not appear in the list."""
         active_tx = _tx(db, mock_account.id, amount="-10.00")
-        soft_deleted = _tx(db, mock_account.id, amount="-20.00", category="Restaurants", is_active=False)
+        soft_deleted = _tx(
+            db,
+            mock_account.id,
+            amount="-20.00",
+            category="Restaurants",
+            is_active=False,
+        )
 
         resp = client.get(f"/accounts/{mock_account.id}/transactions")
         assert resp.status_code == 200
@@ -202,7 +227,9 @@ class TestListTransactionsForAccount:
         _tx(db, mock_account.id, category="Groceries")
         _tx(db, mock_account.id, category="Restaurants")
 
-        resp = client.get(f"/accounts/{mock_account.id}/transactions?category=Groceries")
+        resp = client.get(
+            f"/accounts/{mock_account.id}/transactions?category=Groceries"
+        )
         assert resp.status_code == 200
         items = resp.json()["items"]
         assert all(item["category"] == "Groceries" for item in items)
@@ -253,6 +280,7 @@ class TestListTransactionsForAccount:
 # GET /accounts/{account_id}/transactions/{transaction_id}
 # ---------------------------------------------------------------------------
 
+
 class TestGetTransaction:
     def test_get_existing(self, client, db, mock_account):
         tx = _tx(db, mock_account.id)
@@ -283,6 +311,7 @@ class TestGetTransaction:
 # ---------------------------------------------------------------------------
 # PATCH /accounts/{account_id}/transactions/{transaction_id}
 # ---------------------------------------------------------------------------
+
 
 class TestUpdateTransaction:
     def test_update_category(self, client, db, mock_account):
@@ -350,6 +379,7 @@ class TestUpdateTransaction:
 # DELETE /accounts/{account_id}/transactions/{transaction_id}
 # ---------------------------------------------------------------------------
 
+
 class TestDeleteTransaction:
     def test_delete_returns_204(self, client, db, mock_account):
         tx = _tx(db, mock_account.id)
@@ -385,6 +415,7 @@ class TestDeleteTransaction:
         db.expire_all()
         from sqlalchemy import select
         from models.transaction import Transaction
+
         row = db.scalar(select(Transaction).where(Transaction.id == tx.id))
         assert row is not None
         assert row.is_active is False
@@ -393,6 +424,7 @@ class TestDeleteTransaction:
 # ---------------------------------------------------------------------------
 # GET /transactions (global route)
 # ---------------------------------------------------------------------------
+
 
 class TestListTransactionsGlobal:
     def test_global_list_returns_all_user_transactions(self, client, db, mock_account):

@@ -31,10 +31,10 @@ from models.account import Account
 from models.transaction import Transaction
 from models.transfer import Transfer
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def second_account(db, mock_user):
@@ -53,7 +53,9 @@ def second_account(db, mock_user):
     return acct
 
 
-def _transfer_payload(from_id, to_id, amount="500.00", transfer_date="2025-01-07", notes=None):
+def _transfer_payload(
+    from_id, to_id, amount="500.00", transfer_date="2025-01-07", notes=None
+):
     payload = {
         "from_account_id": str(from_id),
         "to_account_id": str(to_id),
@@ -68,6 +70,7 @@ def _transfer_payload(from_id, to_id, amount="500.00", transfer_date="2025-01-07
 # ---------------------------------------------------------------------------
 # Happy path
 # ---------------------------------------------------------------------------
+
 
 class TestCreateTransferHappyPath:
     def test_transfer_returns_201(self, client, mock_account, second_account):
@@ -91,7 +94,9 @@ class TestCreateTransferHappyPath:
         assert data["to_account_id"] == str(second_account.id)
         assert Decimal(data["amount"]) == Decimal("500.00")
 
-    def test_transfer_creates_transfer_row_in_db(self, client, db, mock_account, second_account):
+    def test_transfer_creates_transfer_row_in_db(
+        self, client, db, mock_account, second_account
+    ):
         """A Transfer record must be persisted with the correct fields."""
         resp = client.post(
             "/transfers",
@@ -108,7 +113,9 @@ class TestCreateTransferHappyPath:
         assert str(row.from_account_id) == str(mock_account.id)
         assert str(row.to_account_id) == str(second_account.id)
 
-    def test_transfer_creates_two_transaction_rows(self, client, db, mock_account, second_account):
+    def test_transfer_creates_two_transaction_rows(
+        self, client, db, mock_account, second_account
+    ):
         """Exactly two Transaction rows must be created, sharing the same transfer_id."""
         resp = client.post(
             "/transfers",
@@ -150,7 +157,9 @@ class TestCreateTransferHappyPath:
         assert credit.direction == "in"
         assert str(credit.account_id) == str(second_account.id)
 
-    def test_both_legs_have_same_transfer_id(self, client, db, mock_account, second_account):
+    def test_both_legs_have_same_transfer_id(
+        self, client, db, mock_account, second_account
+    ):
         """debit and credit transactions must reference the same Transfer record."""
         resp = client.post(
             "/transfers",
@@ -161,7 +170,9 @@ class TestCreateTransferHappyPath:
         credit = db.get(Transaction, uuid.UUID(data["credit_transaction_id"]))
         assert str(debit.transfer_id) == str(credit.transfer_id) == data["id"]
 
-    def test_transfer_notes_propagated_to_both_legs(self, client, db, mock_account, second_account):
+    def test_transfer_notes_propagated_to_both_legs(
+        self, client, db, mock_account, second_account
+    ):
         """Notes on the transfer should appear on both transaction rows."""
         resp = client.post(
             "/transfers",
@@ -180,8 +191,11 @@ class TestCreateTransferHappyPath:
 # Transfer legs visible in transaction lists
 # ---------------------------------------------------------------------------
 
+
 class TestTransferLegsInTransactionLists:
-    def test_debit_leg_in_source_account_list(self, client, db, mock_account, second_account):
+    def test_debit_leg_in_source_account_list(
+        self, client, db, mock_account, second_account
+    ):
         """The debit transaction should appear in GET /accounts/{from_id}/transactions."""
         resp = client.post(
             "/transfers",
@@ -193,7 +207,9 @@ class TestTransferLegsInTransactionLists:
         ids = [item["id"] for item in list_resp.json()["items"]]
         assert debit_id in ids
 
-    def test_credit_leg_in_dest_account_list(self, client, db, mock_account, second_account):
+    def test_credit_leg_in_dest_account_list(
+        self, client, db, mock_account, second_account
+    ):
         """The credit transaction should appear in GET /accounts/{to_id}/transactions."""
         resp = client.post(
             "/transfers",
@@ -205,7 +221,9 @@ class TestTransferLegsInTransactionLists:
         ids = [item["id"] for item in list_resp.json()["items"]]
         assert credit_id in ids
 
-    def test_transfer_legs_excluded_from_global_when_flag_set(self, client, db, mock_account, second_account):
+    def test_transfer_legs_excluded_from_global_when_flag_set(
+        self, client, db, mock_account, second_account
+    ):
         """With exclude_transfers=true, neither transfer leg should appear in GET /transactions."""
         resp = client.post(
             "/transfers",
@@ -218,7 +236,9 @@ class TestTransferLegsInTransactionLists:
         assert data["debit_transaction_id"] not in ids
         assert data["credit_transaction_id"] not in ids
 
-    def test_transfer_legs_included_in_global_without_flag(self, client, db, mock_account, second_account):
+    def test_transfer_legs_included_in_global_without_flag(
+        self, client, db, mock_account, second_account
+    ):
         """Without exclude_transfers, both legs should appear in GET /transactions."""
         resp = client.post(
             "/transfers",
@@ -236,6 +256,7 @@ class TestTransferLegsInTransactionLists:
 # Validation errors
 # ---------------------------------------------------------------------------
 
+
 class TestCreateTransferValidation:
     def test_same_account_returns_400(self, client, mock_account):
         """Transferring from and to the same account must return 400."""
@@ -249,7 +270,9 @@ class TestCreateTransferValidation:
         """Negative amount must be rejected by schema validation."""
         resp = client.post(
             "/transfers",
-            json=_transfer_payload(mock_account.id, second_account.id, amount="-100.00"),
+            json=_transfer_payload(
+                mock_account.id, second_account.id, amount="-100.00"
+            ),
         )
         assert resp.status_code == 422
 
