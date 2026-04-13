@@ -16,6 +16,7 @@ import uuid
 import enum
 from decimal import Decimal
 
+
 from sqlalchemy import (
     Boolean,
     Column,
@@ -28,7 +29,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-
+from models.import_batch import ImportBatch
 from db import Base
 
 

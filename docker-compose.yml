@@ -3,8 +3,6 @@
 # One command — `docker compose up` — starts all three services together.
 # This mirrors production topology: Next.js frontend, FastAPI backend, PostgreSQL database.
 
-version: "3.9"
-
 services:
 
   # ─────────────────────────────────────────
@@ -78,7 +76,7 @@ services:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - JWT_SECRET=${JWT_SECRET}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
       - RESEND_API_KEY=${RESEND_API_KEY}
 
     volumes:
