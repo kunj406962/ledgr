@@ -5,7 +5,7 @@
 
 -- ── Enum ─────────────────────────────────────────────────────────────────────
 
-CREATE TYPE account_type AS ENUM ('chequing', 'savings', 'investment');
+CREATE TYPE account_type AS ENUM ('chequing', 'savings', 'investment', 'credit_card');
 
 -- ── Table ─────────────────────────────────────────────────────────────────────
 

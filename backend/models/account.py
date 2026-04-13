@@ -42,6 +42,7 @@ class AccountType(str, enum.Enum):
     chequing = "chequing"
     savings = "savings"
     investment = "investment"
+    credit_card = "credit_card"
 
 
 class Account(Base):
@@ -73,7 +74,7 @@ class Account(Base):
     type = Column(
         Enum(AccountType),
         nullable=False,
-        comment="chequing | savings | investment",
+        comment="chequing | savings | investment | credit_card",
     )
 
     currency = Column(
