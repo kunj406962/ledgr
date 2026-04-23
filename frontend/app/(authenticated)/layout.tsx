@@ -42,7 +42,7 @@ export default function AuthenticatedLayout({
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop Sidebar */}
-      <div className="hidden md:block">
+      <div className="hidden md:block sticky top-0 h-screen flex-shrink-0">
         <SideBar />
       </div>
       

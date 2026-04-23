@@ -75,3 +75,23 @@ def get_current_user_id(
             detail="Token missing subject claim",
         )
     return uuid.UUID(user_id_str)
+
+
+def delete_current_user(db: Session, user_id: uuid.UUID) -> None:
+    """
+    Hard-delete the user row from public.users.
+
+    Supabase Auth's own record (auth.users) must be removed separately
+    via the Supabase Admin API using the service role key — we cannot
+    DELETE from auth.users directly through SQLAlchemy.
+
+    Cascade behaviour depends on your FK constraints. Accounts use
+    soft-delete (is_active = False) so their history is preserved in
+    the DB even after the user row is gone — adjust if you want a full
+    hard-delete cascade instead.
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
+    db.commit()
