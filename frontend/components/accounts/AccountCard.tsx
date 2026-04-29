@@ -33,7 +33,11 @@ export function AccountCard({ account, sparklineData }: AccountCardProps) {
   const meta = TYPE_META[account.type] ?? TYPE_META.chequing;
   const { Icon, label } = meta;
 
-  const isNegative   = account.current_balance < 0;
+  const isCreditCard = account.type === 'credit_card';
+
+  const isNegative   = isCreditCard
+  ? account.current_balance > 0
+  : account.current_balance < 0;
   const color= isNegative ? '#FF5252' : '#00D68F';
 
   const fallback  = Array(7).fill(Math.abs(account.current_balance));
