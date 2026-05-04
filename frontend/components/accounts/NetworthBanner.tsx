@@ -3,7 +3,10 @@ import type { Account } from "@/hooks/useAccounts";
 import { Card } from "../ui/Card";
 
 export default function NetWorthBanner({ accounts }: { accounts: Account[] }) {
-  const total      = accounts.reduce((sum, a) => sum + a.current_balance, 0);
+    const total = accounts.reduce(
+        (sum, a) => sum + Number(a.current_balance),
+        0
+    );
     return (
        <Card>
             <div className="flex items-center gap-4">
