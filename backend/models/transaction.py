@@ -67,7 +67,15 @@ class Transaction(Base):
     )
 
     direction = Column(
-        Enum(TransactionDirection),
+        # values_callable tells SQLAlchemy to use the enum .value ("in"/"out")
+        # rather than the member name ("incoming"/"outgoing") when writing to
+        # and reading from Postgres. Without this, SQLAlchemy serialises the
+        # Python name, which doesn't match the DB enum type created as
+        # ('in', 'out') in the migration.
+        Enum(
+            TransactionDirection,
+            values_callable=lambda e: [m.value for m in e],
+        ),
         nullable=False,
         comment="Explicit in/out alongside the signed amount",
     )
