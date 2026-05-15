@@ -69,12 +69,12 @@ export function AccountDeleteModal({
   return (
     /* Backdrop */
     <div
-      className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+      className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50"
       onClick={handleClose}
     >
       {/* Panel */}
       <div
-        className="relative bg-background border border-border rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden"
+        className="relative bg-card border border-border rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden space-y-4 p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="w-10 h-10 rounded-xl bg-accent-destructive/10 flex items-center justify-center mb-2">
@@ -110,7 +110,7 @@ export function AccountDeleteModal({
             Cancel
           </Button>
           <Button
-            variant="primary"
+            variant="destructive"
             onClick={handleDelete}
             className="flex-1 bg-accent-destructive hover:bg-accent-destructive/90 disabled:opacity-40"
             disabled={!confirmed || deleting}

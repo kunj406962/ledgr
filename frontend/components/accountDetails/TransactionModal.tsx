@@ -23,7 +23,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { TransferDeleteModal } from './TransferDeleteModal';
+
 import type { Transaction } from '@/hooks/useAccountDetail';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
@@ -38,7 +38,8 @@ interface TransactionModalProps {
   isOpen: boolean;
   transaction: Transaction | null;
   onClose: () => void;
-  onSuccess: () => void; // refetch after edit or delete
+  onSuccess: () => void;
+  onDeleteTransfer: (tx: Transaction) => void; // handed up to TransactionTable which owns TransferDeleteModal
 }
 
 function parseLocalDate(iso: string): Date {
@@ -69,13 +70,13 @@ export function TransactionModal({
   transaction,
   onClose,
   onSuccess,
+  onDeleteTransfer,
 }: TransactionModalProps) {
   const { getAccessToken } = useAuth();
 
   const [mode, setMode] = useState<Mode>('view');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [transferDeleteOpen, setTransferDeleteOpen] = useState(false);
 
   // Edit form state — initialised from transaction when entering edit mode
   const [editCategory, setEditCategory] = useState('');
@@ -172,7 +173,7 @@ export function TransactionModal({
         onClick={handleClose}
       >
         <div
-          className="w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl border p-6 space-y-4 relative bg-card border-border rounded-lg shadow-2xl max-w-md max-h-[90vh] overflow-hidden"
+          className="relative bg-card border border-border rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden p-6 space-y-4"
           onClick={(e) => e.stopPropagation()}
         >
           {/* ── VIEW MODE ─────────────────────────────────────────────────── */}
@@ -213,8 +214,8 @@ export function TransactionModal({
                       Close
                     </Button>
                     <Button
-                      variant="ghost"
-                      onClick={() => { handleClose(); setTransferDeleteOpen(true); }}
+                      variant="destructive"
+                      onClick={() => { handleClose(); onDeleteTransfer(transaction); }}
                       className="flex-1 text-accent-destructive border-accent-destructive"
                     >
                       Delete Transfer
@@ -232,7 +233,7 @@ export function TransactionModal({
                   <Button
                     variant="destructive"
                     onClick={() => setMode('confirmDelete')}
-                    className="flex-1"
+                    className="flex-1 text-accent-destructive"
                   >
                     Delete
                   </Button>
@@ -342,13 +343,7 @@ export function TransactionModal({
         </div>
       </div>
 
-      {/* Transfer delete — opened after closing the main modal */}
-      <TransferDeleteModal
-        isOpen={transferDeleteOpen}
-        transaction={transaction}
-        onClose={() => setTransferDeleteOpen(false)}
-        onSuccess={onSuccess}
-      />
+
     </>
   );
 }

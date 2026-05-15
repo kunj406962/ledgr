@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { TransactionModal } from './TransactionModal';
+import { TransferDeleteModal } from './TransferDeleteModal';
 import type { Transaction } from '@/hooks/useAccountDetail';
 
 type Filter = 'all' | 'in' | 'out';
@@ -54,6 +55,7 @@ export function TransactionTable({
   onSuccess,
 }: TransactionTableProps) {
   const [selected, setSelected] = useState<Transaction | null>(null);
+  const [transferToDelete, setTransferToDelete] = useState<Transaction | null>(null);
 
   return (
     <>
@@ -160,8 +162,22 @@ export function TransactionTable({
         isOpen={selected !== null}
         transaction={selected}
         onClose={() => setSelected(null)}
+        onDeleteTransfer={(tx) => {
+          setSelected(null);
+          setTransferToDelete(tx);
+        }}
         onSuccess={() => {
           setSelected(null);
+          onSuccess();
+        }}
+      />
+
+      <TransferDeleteModal
+        isOpen={transferToDelete !== null}
+        transaction={transferToDelete}
+        onClose={() => setTransferToDelete(null)}
+        onSuccess={() => {
+          setTransferToDelete(null);
           onSuccess();
         }}
       />
