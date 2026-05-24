@@ -193,7 +193,7 @@ describe('createTransaction', () => {
   it('POSTs to /accounts/:id/transactions with signed amount', async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ id: 'txn-new', ...mockTransactions[0] }),
+      json: async () => ({ ...mockTransactions[0], id: 'txn-new' }),
     });
 
     await createTransaction(

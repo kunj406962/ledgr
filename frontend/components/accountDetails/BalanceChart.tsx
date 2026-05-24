@@ -83,7 +83,7 @@ export function BalanceChart({ data }: BalanceChartProps) {
               width={60}
             />
             <Tooltip
-              formatter={(v: number) => [formatCurrency(v), 'Balance']}
+              formatter={(v) => [formatCurrency(v as number || 0), 'Balance']}
               contentStyle={{
                 backgroundColor: 'var(--bg-card)',
                 border: '1px solid var(--border)',
