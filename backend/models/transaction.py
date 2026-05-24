@@ -67,7 +67,15 @@ class Transaction(Base):
     )
 
     direction = Column(
-        Enum(TransactionDirection),
+        # values_callable tells SQLAlchemy to use the enum .value ("in"/"out")
+        # rather than the member name ("incoming"/"outgoing") when writing to
+        # and reading from Postgres. Without this, SQLAlchemy serialises the
+        # Python name, which doesn't match the DB enum type created as
+        # ('in', 'out') in the migration.
+        Enum(
+            TransactionDirection,
+            values_callable=lambda e: [m.value for m in e],
+        ),
         nullable=False,
         comment="Explicit in/out alongside the signed amount",
     )
@@ -82,6 +90,7 @@ class Transaction(Base):
     description_raw = Column(Text, comment="Original bank statement description")
     transaction_date = Column(Date, nullable=False)
     is_recurring = Column(Boolean, nullable=False, default=False)
+    is_active = Column(Boolean, default=True, nullable=False)
 
     # ── Import / transfer links ───────────────────────────────────────────────
     transfer_id = Column(UUID(as_uuid=True), ForeignKey("transfers.id"), nullable=True)
@@ -92,6 +101,7 @@ class Transaction(Base):
     # ── Duplicate prevention ──────────────────────────────────────────────────
     dedup_hash = Column(
         String(64),
+        unique=True,
         nullable=True,
         comment="SHA256(account_id+date+amount+description) — prevents duplicate imports",
     )
@@ -103,3 +113,14 @@ class Transaction(Base):
 
     # ── Relationships ─────────────────────────────────────────────────────────
     account = relationship("Account", back_populates="transactions")
+
+    transfer = relationship(
+        "Transfer",
+        foreign_keys=[transfer_id],
+        back_populates="transactions",
+    )
+
+    import_batch = relationship(
+        "ImportBatch",
+        back_populates="transactions",
+    )

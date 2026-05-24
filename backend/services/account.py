@@ -35,7 +35,7 @@ def _compute_balance(db: Session, account: Account) -> Decimal:
     """
     total = (
         db.query(func.sum(Transaction.amount))
-        .filter(Transaction.account_id == account.id)
+        .filter(Transaction.account_id == account.id, Transaction.is_active == True)
         .scalar()
     )
 

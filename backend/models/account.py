@@ -16,6 +16,7 @@ import uuid
 import enum
 from decimal import Decimal
 
+
 from sqlalchemy import (
     Boolean,
     Column,
@@ -28,7 +29,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-
+from models.import_batch import ImportBatch
 from db import Base
 
 
@@ -41,7 +42,8 @@ class AccountType(str, enum.Enum):
 
     chequing = "chequing"
     savings = "savings"
-    investment = "investmen"
+    investment = "investment"
+    credit_card = "credit_card"
 
 
 class Account(Base):
@@ -73,7 +75,7 @@ class Account(Base):
     type = Column(
         Enum(AccountType),
         nullable=False,
-        comment="chequing | savings | investment",
+        comment="chequing | savings | investment | credit_card",
     )
 
     currency = Column(
@@ -115,6 +117,11 @@ class Account(Base):
     user = relationship("User", back_populates="accounts")
     transactions = relationship(
         "Transaction",
+        back_populates="account",
+        cascade="all, delete-orphan",
+    )
+    import_batches = relationship(
+        "ImportBatch",
         back_populates="account",
         cascade="all, delete-orphan",
     )
